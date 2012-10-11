@@ -1,0 +1,5 @@
+<resources>
+
+    <dimen name="header_height">64dp</dimen>
+
+</resources>
