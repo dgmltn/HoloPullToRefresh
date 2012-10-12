@@ -5,9 +5,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Adapter;
 import android.widget.FrameLayout;
-import android.widget.ListView;
 
 import com.dougmelton.holoptr.AnimateRunnable.OnTickHandler;
 
@@ -113,7 +111,7 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 
 					if (yDiff > 8 && dy >= 1f) {
 						mLastMotionY = y;
-						mPullDistance = (int) ((mLastMotionY - mInitialMotionY) / FRICTION);
+						mPullDistance = Math.max(0, (int) ((mLastMotionY - mInitialMotionY) / FRICTION));
 						setState(State.PULL_TO_REFRESH, true);
 						return true;
 					}
@@ -161,7 +159,7 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 			Log.e(TAG, "Touch MOVE");
 			if (mState != State.REST) {
 				mLastMotionY = event.getY();
-				mPullDistance = (int) ((mLastMotionY - mInitialMotionY) / FRICTION);
+				mPullDistance = Math.max(0, (int) ((mLastMotionY - mInitialMotionY) / FRICTION));
 				pullEvent();
 				return true;
 			}
