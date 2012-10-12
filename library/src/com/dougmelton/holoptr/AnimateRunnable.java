@@ -16,7 +16,6 @@ final class AnimateRunnable implements Runnable {
 	private final int mTo;
 	private final int mFrom;
 
-	private boolean mContinueRunning = true;
 	private boolean mIsStopped = false;
 
 	private long mStartTime = -1;
@@ -62,7 +61,7 @@ final class AnimateRunnable implements Runnable {
 		}
 
 		// If we're not at the target Y, keep going...
-		if (mContinueRunning && mTo != mCurrent) {
+		if (mTo != mCurrent) {
 			// if (VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN) {
 			// SDK16.postOnAnimation(PullToRefreshBase.this, this);
 			// } else {
@@ -70,16 +69,10 @@ final class AnimateRunnable implements Runnable {
 			// }
 		}
 		else {
-			mTickHandler.done(false);
+			mView.removeCallbacks(this);
 			mIsStopped = true;
+			mTickHandler.done();
 		}
-	}
-
-	public void cancel() {
-		mContinueRunning = false;
-		mView.removeCallbacks(this);
-		mTickHandler.done(true);
-		mIsStopped = true;
 	}
 
 	public boolean isStopped() {
@@ -89,7 +82,7 @@ final class AnimateRunnable implements Runnable {
 	public interface OnTickHandler {
 		public void tick(int y);
 
-		public void done(boolean cancelled);
+		public void done();
 	}
 
 }

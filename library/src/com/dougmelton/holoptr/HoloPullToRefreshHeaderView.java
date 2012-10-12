@@ -35,8 +35,6 @@ public class HoloPullToRefreshHeaderView extends FrameLayout {
 	private int mInstructionTranslationX = 0;
 	private int mSpinnerTranslationX = 0;
 
-	AnimateRunnable mAnimation;
-
 	public HoloPullToRefreshHeaderView(Context context) {
 		this(context, null);
 	}
@@ -175,46 +173,38 @@ public class HoloPullToRefreshHeaderView extends FrameLayout {
 		final int instructionEndX = getWidth() - mReleaseToRefresh.getLeft();
 		final int spinnerEndX = (getWidth() + mSpinner.getWidth()) / 2 - mSpinner.getRight();
 
-		if (animated) {
-			// Slide "release to refresh" off the screen
-			// Slide refresh icon to the middle
+		// Slide "release to refresh" off the screen
+		// Slide refresh icon to the middle
 
-			animate(0, 1000, new OnTickHandler() {
-				@Override
-				public void tick(int y) {
-					mInstructionTranslationX = y * instructionEndX / 1000;
-					mSpinnerTranslationX = y * spinnerEndX / 1000;
-					requestLayout();
-				}
+		animate(0, 1000, animated, new OnTickHandler() {
+			@Override
+			public void tick(int y) {
+				mInstructionTranslationX = y * instructionEndX / 1000;
+				mSpinnerTranslationX = y * spinnerEndX / 1000;
+				requestLayout();
+			}
 
-				@Override
-				public void done(boolean cancelled) {
-					mInstructionTranslationX = instructionEndX;
-					mSpinnerTranslationX = spinnerEndX;
-					mPullToRefresh.setVisibility(View.INVISIBLE);
-					mReleaseToRefresh.setVisibility(View.INVISIBLE);
-					spin();
-					requestLayout();
-				}
-			});
-		}
-		else {
-			mInstructionTranslationX = instructionEndX;
-			mSpinnerTranslationX = spinnerEndX;
-			mPullToRefresh.setVisibility(View.INVISIBLE);
-			mReleaseToRefresh.setVisibility(View.INVISIBLE);
-			spin();
-			requestLayout();
-		}
+			@Override
+			public void done() {
+				mInstructionTranslationX = instructionEndX;
+				mSpinnerTranslationX = spinnerEndX;
+				mPullToRefresh.setVisibility(View.INVISIBLE);
+				mReleaseToRefresh.setVisibility(View.INVISIBLE);
+				spin();
+				requestLayout();
+			}
+		});
 
 	}
 
-	private void animate(int from, int to, OnTickHandler handler) {
-		if (mAnimation != null && !mAnimation.isStopped()) {
-			mAnimation.cancel();
+	private void animate(int from, int to, boolean animated, OnTickHandler handler) {
+		if (animated) {
+			post(new AnimateRunnable(this, from, to, handler));
 		}
-		mAnimation = new AnimateRunnable(this, from, to, handler);
-		post(mAnimation);
+		else {
+			handler.done();
+		}
+
 	}
 
 	// Make the icon rotate (even if animated == false)

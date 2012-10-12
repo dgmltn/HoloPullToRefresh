@@ -1,5 +1,8 @@
 package com.dougmelton.holoptr;
 
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -241,7 +244,41 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 	/////////////////////////////////////////////////////////////////////////////
 	// State machine
 
+	private Queue<StateTransition> mStateQueue = null;
+
+	private static class StateTransition {
+		public State state;
+		public boolean animated;
+
+		public StateTransition(State state, boolean animated) {
+			this.state = state;
+			this.animated = animated;
+		}
+	}
+
+	private void dequeueState() {
+		if (mStateQueue == null || mStateQueue.isEmpty()) {
+			return;
+		}
+		post(new Runnable() {
+			@Override
+			public void run() {
+				StateTransition transition = mStateQueue.poll();
+				setState(transition.state, transition.animated);
+			}
+		});
+	}
+
 	private void setState(State state, boolean animated) {
+		// If an animation is already going, queue up the next one
+		if (mAnimation != null && !mAnimation.isStopped()) {
+			if (mStateQueue == null) {
+				mStateQueue = new ConcurrentLinkedQueue<StateTransition>();
+			}
+			mStateQueue.add(new StateTransition(state, animated));
+			return;
+		}
+
 		State fromState = mState;
 		mState = state;
 
@@ -269,7 +306,6 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 	protected void onRest(State fromState, boolean isAnimated) {
 
 		if (!isAnimated || mPullDistance == 0) {
-			Log.e(TAG, "onRest, not animated");
 			offsetGlow(0);
 			offsetRotation(0);
 			setRefreshingTop(false);
@@ -281,33 +317,33 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 			mHeader.stopSpinning();
 
 			int starty = Math.max(0, getViewTopOffset());
-
-			stopAnimation();
 			offset(starty, 0, 0);
 			setRefreshingTop(false);
 
-			animate(starty, 0, new OnTickHandler() {
+			animate(starty, 0, isAnimated, new OnTickHandler() {
 				@Override
 				public void tick(int y) {
 					offset(y, 0, 0);
 				}
 
 				@Override
-				public void done(boolean cancelled) {
+				public void done() {
 					mHeader.rest();
+					dequeueState();
 				}
 			});
 		}
 		else {
-			animate(mPullDistance, 0, new OnTickHandler() {
+			animate(mPullDistance, 0, isAnimated, new OnTickHandler() {
 				@Override
 				public void tick(int y) {
 					offset(y, y, y);
 				}
 
 				@Override
-				public void done(boolean cancelled) {
+				public void done() {
 					mHeader.rest();
+					dequeueState();
 				}
 			});
 		}
@@ -348,42 +384,31 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 
 		mHeader.refresh(animated);
 
-		if (animated) {
-			// Remove the glow and the tilt
-			animate(mPullDistance, 0, new OnTickHandler() {
-				@Override
-				public void tick(int y) {
-					offset(mPullDistance, y, y);
-				}
+		// Remove the glow and the tilt
+		animate(mPullDistance, 0, animated, new OnTickHandler() {
+			@Override
+			public void tick(int y) {
+				offset(mPullDistance, y, y);
+			}
 
-				@Override
-				public void done(boolean cancelled) {
-					if (!cancelled) {
-						offset(0, 0, 0);
-						setRefreshingTop(true);
-					}
-				}
-			});
-		}
-		else {
-			offset(0, 0, 0);
-			setRefreshingTop(true);
-		}
+			@Override
+			public void done() {
+				offset(0, 0, 0);
+				setRefreshingTop(true);
+				dequeueState();
+			}
+		});
 	}
 
 	AnimateRunnable mAnimation;
 
-	private void animate(int from, int to, OnTickHandler handler) {
-		if (mAnimation != null && !mAnimation.isStopped()) {
-			mAnimation.cancel();
+	private void animate(int from, int to, boolean animated, OnTickHandler handler) {
+		if (animated) {
+			mAnimation = new AnimateRunnable(this, from, to, handler);
+			post(mAnimation);
 		}
-		mAnimation = new AnimateRunnable(this, from, to, handler);
-		post(mAnimation);
-	}
-
-	private void stopAnimation() {
-		if (mAnimation != null && !mAnimation.isStopped()) {
-			mAnimation.cancel();
+		else {
+			handler.done();
 		}
 	}
 
