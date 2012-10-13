@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:background="@android:color/white"
     android:gravity="center_vertical"
-    android:minHeight="?android:attr/listPreferredItemHeightSmall"
-    android:paddingLeft="?android:attr/listPreferredItemPaddingLeft"
-    android:paddingRight="?android:attr/listPreferredItemPaddingRight"
-    android:textAppearance="?android:attr/textAppearanceListItemSmall" />
+    android:minHeight="?android:attr/listPreferredItemHeight"
+    android:padding="6dp"
+    android:textColor="@android:color/black"
+    android:textAppearance="?android:attr/textAppearanceLarge" />
