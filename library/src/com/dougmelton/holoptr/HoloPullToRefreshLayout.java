@@ -213,7 +213,7 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 	}
 
 	protected final void offsetTop(int y) {
-		mOffsetTop = Math.min(128, y);
+		mOffsetTop = Math.min(mHeaderHeight, y);
 
 		mAnimProxy.setTranslationY(mOffsetTop, true);
 	}
@@ -227,7 +227,7 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 	}
 
 	protected void offsetRotation(int y) {
-		mOffsetRotation = Math.min(128, y);
+		mOffsetRotation = Math.min(mHeaderHeight, y);
 
 		mAnimProxy.setPivotY(0);
 		mAnimProxy.setPivotX(getWidth() / 2);
