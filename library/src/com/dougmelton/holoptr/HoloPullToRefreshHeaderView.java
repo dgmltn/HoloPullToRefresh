@@ -8,6 +8,7 @@ import java.io.InputStream;
 
 import android.content.Context;
 import android.content.res.Resources.NotFoundException;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -60,6 +61,7 @@ public class HoloPullToRefreshHeaderView extends FrameLayout {
 		mPullToRefresh.setText(R.string.Pull_to_refresh);
 		mPullToRefresh.setTypeface(type);
 		mPullToRefresh.setTextSize(24);
+		mPullToRefresh.setTextColor(Color.BLACK);
 		mPullToRefresh.setGravity(Gravity.CENTER_VERTICAL);
 		mPullToRefresh.setVisibility(View.INVISIBLE);
 		this.addView(mPullToRefresh);
@@ -68,6 +70,7 @@ public class HoloPullToRefreshHeaderView extends FrameLayout {
 		mReleaseToRefresh.setText(R.string.Release_to_refresh);
 		mReleaseToRefresh.setTextSize(24);
 		mReleaseToRefresh.setTypeface(type);
+		mReleaseToRefresh.setTextColor(Color.BLACK);
 		mReleaseToRefresh.setGravity(Gravity.CENTER_VERTICAL);
 		mReleaseToRefresh.setVisibility(View.INVISIBLE);
 		this.addView(mReleaseToRefresh);
