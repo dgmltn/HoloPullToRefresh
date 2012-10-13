@@ -101,10 +101,9 @@ public class ArrayActivity extends ListActivity {
 		@Override
 		protected Void doInBackground(Void... params) {
 			try {
-				Thread.sleep(100);
+				Thread.sleep(4000);
 			}
 			catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			return null;
