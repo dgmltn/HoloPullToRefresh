@@ -8,6 +8,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 
 import com.dougmelton.holoptr.AnimateRunnable.OnTickHandler;
@@ -63,15 +64,15 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 		mHeader.setLayoutParams(lpHeader);
 		addView(mHeader, 0);
 
-		post(new Runnable() {
-			@Override
-			public void run() {
+		ViewTreeObserver.OnGlobalLayoutListener listener = new ViewTreeObserver.OnGlobalLayoutListener() {
+			public void onGlobalLayout() {
+				getViewTreeObserver().removeGlobalOnLayoutListener(this);
 				mRefreshableView = findViewById(android.R.id.list);
 				mAnimProxy = AnimatorProxy.wrap(mRefreshableView);
 				setState(State.REST, false);
 			}
-		});
-
+		};
+		getViewTreeObserver().addOnGlobalLayoutListener(listener);
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
@@ -84,7 +85,6 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 		switch (action) {
 
 		case MotionEvent.ACTION_DOWN: {
-			Log.e(TAG, "Touch Intercept DOWN");
 			if (mState == State.REFRESH) {
 				return !mTouchDuringRefresh;
 			}
@@ -99,8 +99,6 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 		}
 
 		case MotionEvent.ACTION_MOVE: {
-			Log.e(TAG, "Touch Intercept MOVE");
-
 			// If we're refreshing, and the flag is set. Eat all MOVE events
 			if (mState == State.REFRESH) {
 				return !mTouchDuringRefresh;
@@ -126,12 +124,10 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 
 		case MotionEvent.ACTION_CANCEL:
 		case MotionEvent.ACTION_UP: {
-			Log.e(TAG, "Touch Intercept CANCEL/UP");
 			return mState != State.REST;
 		}
 		}
 
-		Log.e(TAG, "Touch Intercept: unexpected state, returning false");
 		return false;
 	}
 
@@ -140,13 +136,11 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 
 		// If we're refreshing, eat the event
 		if (mState == State.REFRESH) {
-			Log.e(TAG, "Touch NOM NOM");
 			return !mTouchDuringRefresh;
 		}
 
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN: {
-			Log.e(TAG, "Touch DOWN");
 			if (event.getEdgeFlags() != 0) {
 				return false;
 			}
@@ -159,7 +153,6 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 		}
 
 		case MotionEvent.ACTION_MOVE: {
-			Log.e(TAG, "Touch MOVE");
 			if (mState != State.REST) {
 				mLastMotionY = event.getY();
 				mPullDistance = Math.max(0, (int) ((mLastMotionY - mInitialMotionY) / FRICTION));
@@ -171,7 +164,6 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 
 		case MotionEvent.ACTION_CANCEL:
 		case MotionEvent.ACTION_UP: {
-			Log.e(TAG, "Touch UP");
 			if (mState == State.RELEASE_TO_REFRESH) {
 				setState(State.REFRESH, true);
 			}
@@ -213,6 +205,11 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 	}
 
 	protected final void offsetTop(int y) {
+		if (mAnimProxy == null) {
+			Log.e(TAG, "mAnimProxy is null");
+			return;
+		}
+
 		mOffsetTop = Math.min(mHeaderHeight, y);
 
 		mAnimProxy.setTranslationY(mOffsetTop, true);
@@ -227,6 +224,11 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 	}
 
 	protected void offsetRotation(int y) {
+		if (mAnimProxy == null) {
+			Log.e(TAG, "mAnimProxy is null");
+			return;
+		}
+
 		mOffsetRotation = Math.min(mHeaderHeight, y);
 
 		mAnimProxy.setPivotY(0);
@@ -281,8 +283,6 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 
 		State fromState = mState;
 		mState = state;
-
-		Log.e(TAG, "setState " + fromState + " => " + mState);
 
 		switch (state) {
 		case REST:
