@@ -18,7 +18,7 @@ import com.dougmelton.holoptr.AnimateRunnable.OnTickHandler;
 public class HoloPullToRefreshLayout extends FrameLayout {
 	private static final String TAG = HoloPullToRefreshLayout.class.getSimpleName();
 
-	private static final float FRICTION = 2.5f;
+//	private static final float FRICTION = 2.5f;
 
 	private static enum State {
 		REST,
@@ -125,7 +125,7 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 
 					if (yDiff > 8 && dy >= 1f) {
 						mLastMotionY = y;
-						mPullDistance = Math.max(0, (int) ((mLastMotionY - mInitialMotionY) / FRICTION));
+						mPullDistance = Math.max(0, (int) augmentedPullDistance(mLastMotionY - mInitialMotionY));
 						setState(State.PULL_TO_REFRESH, true);
 						return true;
 					}
@@ -142,6 +142,15 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 		}
 
 		return false;
+	}
+
+	// This calculates a springiness to the pull
+	private float augmentedPullDistance(float pixels) {
+//		float augmented1 = pixels / FRICTION;
+//		float augmented2 = (pixels * 650f) / (pixels + 1500f);
+		float augmented2 = (pixels * 400f) / (pixels + 1000f);
+//		Log.e(TAG, pixels + " => " + augmented1 + " vs " + augmented2);
+		return augmented2;
 	}
 
 	@Override
@@ -168,7 +177,7 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 		case MotionEvent.ACTION_MOVE: {
 			if (mState != State.REST) {
 				mLastMotionY = event.getY();
-				mPullDistance = Math.max(0, (int) ((mLastMotionY - mInitialMotionY) / FRICTION));
+				mPullDistance = Math.max(0, (int) augmentedPullDistance(mLastMotionY - mInitialMotionY));
 				pullEvent();
 				return true;
 			}
