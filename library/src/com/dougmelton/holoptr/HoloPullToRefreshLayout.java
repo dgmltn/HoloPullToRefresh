@@ -4,12 +4,14 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import com.dougmelton.holoptr.AnimateRunnable.OnTickHandler;
 
@@ -39,6 +41,7 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 
 	private int mHeaderHeight;
 	private HoloPullToRefreshHeaderView mHeader;
+	private ImageView mShadow;
 
 	private View mRefreshableView;
 	private AnimatorProxy mAnimProxy;
@@ -59,10 +62,18 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 		mHeaderHeight = context.getResources().getDimensionPixelSize(R.dimen.header_height);
 
 		mHeader = new HoloPullToRefreshHeaderView(context, attrs);
-		FrameLayout.LayoutParams lpHeader = new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT,
-				mHeaderHeight);
+		FrameLayout.LayoutParams lpHeader = generateDefaultLayoutParams();
+		lpHeader.height = mHeaderHeight;
 		mHeader.setLayoutParams(lpHeader);
 		addView(mHeader, 0);
+
+		mShadow = new ImageView(context, attrs);
+		mShadow.setBackgroundColor(Color.TRANSPARENT);
+		FrameLayout.LayoutParams lpShadow = generateDefaultLayoutParams();
+		lpShadow.height = mHeaderHeight;
+		mShadow.setLayoutParams(lpShadow);
+		mShadow.setImageResource(R.drawable.shadow);
+		addView(mShadow, 1);
 
 		ViewTreeObserver.OnGlobalLayoutListener listener = new ViewTreeObserver.OnGlobalLayoutListener() {
 			public void onGlobalLayout() {
@@ -183,9 +194,7 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 	// Move the views around holo-like
 
 	private void pullEvent() {
-		offsetTop(mPullDistance);
-		offsetGlow(mPullDistance);
-		offsetSkew(mPullDistance);
+		offset(mPullDistance, mPullDistance, mPullDistance);
 
 		if (mPullDistance == 0) {
 			setState(State.REST, true);
@@ -204,6 +213,12 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 		offsetGlow(glow);
 		offsetTop(top);
 		offsetSkew(rotation);
+		offsetShadow(top, rotation);
+	}
+
+	protected final void offsetShadow(int top, int rotation) {
+		top = Math.min(mHeaderHeight, top);
+		mShadow.setTranslationY(top - mShadow.getHeight());
 	}
 
 	protected final void offsetGlow(int y) {
@@ -317,8 +332,8 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 	 */
 	protected void onRest(State fromState, boolean isAnimated) {
 		if (!isAnimated || mPullDistance == 0) {
-			offsetGlow(0);
-			offsetSkew(0);
+			//TODO: we didn't used to set offsetTop(0) here... for some reason
+			offset(0, 0, 0);
 			setRefreshingTop(false);
 			mHeader.rest();
 			return;
@@ -405,6 +420,7 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 			@Override
 			public void done() {
 				offset(0, 0, 0);
+				offsetShadow(mPullDistance, 0);
 				setRefreshingTop(true);
 				dequeueState();
 			}
