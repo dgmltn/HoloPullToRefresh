@@ -68,7 +68,9 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 			public void onGlobalLayout() {
 				getViewTreeObserver().removeGlobalOnLayoutListener(this);
 				mRefreshableView = findViewById(android.R.id.list);
-				mAnimProxy = AnimatorProxy.wrap(mRefreshableView);
+				if (AnimatorProxy.NEEDS_PROXY) {
+					mAnimProxy = AnimatorProxy.wrap(mRefreshableView);
+				}
 				setState(State.REST, false);
 			}
 		};
@@ -183,7 +185,7 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 	private void pullEvent() {
 		offsetTop(mPullDistance);
 		offsetGlow(mPullDistance);
-		offsetRotation(mPullDistance);
+		offsetSkew(mPullDistance);
 
 		if (mPullDistance == 0) {
 			setState(State.REST, true);
@@ -199,20 +201,9 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 	}
 
 	protected final void offset(int top, int glow, int rotation) {
-		offsetTop(top);
 		offsetGlow(glow);
-		offsetRotation(rotation);
-	}
-
-	protected final void offsetTop(int y) {
-		if (mAnimProxy == null) {
-			Log.e(TAG, "mAnimProxy is null");
-			return;
-		}
-
-		mOffsetTop = Math.min(mHeaderHeight, y);
-
-		mAnimProxy.setTranslationY(mOffsetTop, true);
+		offsetTop(top);
+		offsetSkew(rotation);
 	}
 
 	protected final void offsetGlow(int y) {
@@ -223,24 +214,45 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 		}
 	}
 
-	protected void offsetRotation(int y) {
-		if (mAnimProxy == null) {
-			Log.e(TAG, "mAnimProxy is null");
-			return;
+	protected final void offsetTop(int y) {
+		mOffsetTop = Math.min(mHeaderHeight, y);
+
+		if (AnimatorProxy.NEEDS_PROXY) {
+			if (mAnimProxy == null) {
+				Log.e(TAG, "mAnimProxy is null");
+				return;
+			}
+			mAnimProxy.setTranslationY(mOffsetTop);
 		}
+		else {
+			mRefreshableView.setTranslationY(mOffsetTop);
+		}
+	}
 
+	protected void offsetSkew(int y) {
 		mOffsetRotation = Math.min(mHeaderHeight, y);
-
-		mAnimProxy.setPivotY(0);
-		mAnimProxy.setPivotX(getWidth() / 2);
-
 		float degrees = Math.min(32f, mOffsetRotation / 24f);
-		mAnimProxy.setRotationX(-degrees);
-
 		float scale = 1f + degrees / 128f;
 		//float scale = 1f - degrees / 1024f;
-		mAnimProxy.setScaleX(scale);
-		mAnimProxy.setScaleY(scale);
+
+		if (AnimatorProxy.NEEDS_PROXY) {
+			if (mAnimProxy == null) {
+				Log.e(TAG, "mAnimProxy is null");
+				return;
+			}
+			mAnimProxy.setPivotY(0);
+			mAnimProxy.setPivotX(getWidth() / 2);
+			mAnimProxy.setRotationX(-degrees);
+			mAnimProxy.setScaleX(scale);
+			mAnimProxy.setScaleY(scale);
+		}
+		else {
+			mRefreshableView.setPivotY(0);
+			mRefreshableView.setPivotX(getWidth() / 2);
+			mRefreshableView.setRotationX(-degrees);
+			mRefreshableView.setScaleX(scale);
+			mRefreshableView.setScaleY(scale);
+		}
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
@@ -304,10 +316,9 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 	 * Called when the UI needs to be updated to the 'Rest' state
 	 */
 	protected void onRest(State fromState, boolean isAnimated) {
-
 		if (!isAnimated || mPullDistance == 0) {
 			offsetGlow(0);
-			offsetRotation(0);
+			offsetSkew(0);
 			setRefreshingTop(false);
 			mHeader.rest();
 			return;
