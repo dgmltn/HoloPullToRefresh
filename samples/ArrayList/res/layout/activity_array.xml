@@ -7,7 +7,7 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/header_height"
+        android:layout_height="@dimen/hptr_header_height"
         android:layout_gravity="bottom" >
 
         <ImageView
@@ -15,7 +15,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:src="@drawable/ic_refresh" />
+            android:src="@drawable/hptr_ic_refresh" />
     </FrameLayout>
 
     <com.dougmelton.holoptr.RefreshableListView

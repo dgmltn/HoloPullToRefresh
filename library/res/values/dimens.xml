@@ -1,5 +1,5 @@
 <resources>
 
-    <dimen name="header_height">64dp</dimen>
+    <dimen name="hptr_header_height">64dp</dimen>
 
 </resources>

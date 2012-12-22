@@ -47,18 +47,18 @@ public class HoloPullToRefreshHeaderView extends FrameLayout {
 	public HoloPullToRefreshHeaderView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 
-		mNaturalHeight = getResources().getDimensionPixelSize(R.dimen.header_height);
+		mNaturalHeight = getResources().getDimensionPixelSize(R.dimen.hptr_header_height);
 
 		// Refresh spinner image
 		mSpinner = new ImageView(context);
-		mSpinner.setImageResource(R.drawable.ic_refresh);
+		mSpinner.setImageResource(R.drawable.hptr_ic_refresh);
 		mSpinner.setVisibility(View.INVISIBLE);
 		this.addView(mSpinner);
 
 		// "Pull to refresh."
 		final Typeface type = getFontFromRes(R.raw.roboto_light);
 		mPullToRefresh = new TextView(context);
-		mPullToRefresh.setText(R.string.Pull_to_refresh);
+		mPullToRefresh.setText(R.string.hptr_Pull_to_refresh);
 		mPullToRefresh.setTypeface(type);
 		mPullToRefresh.setTextSize(24);
 		mPullToRefresh.setTextColor(Color.BLACK);
@@ -66,8 +66,9 @@ public class HoloPullToRefreshHeaderView extends FrameLayout {
 		mPullToRefresh.setVisibility(View.INVISIBLE);
 		this.addView(mPullToRefresh);
 
+		// "Release to refresh."
 		mReleaseToRefresh = new TextView(context);
-		mReleaseToRefresh.setText(R.string.Release_to_refresh);
+		mReleaseToRefresh.setText(R.string.hptr_Release_to_refresh);
 		mReleaseToRefresh.setTextSize(24);
 		mReleaseToRefresh.setTypeface(type);
 		mReleaseToRefresh.setTextColor(Color.BLACK);

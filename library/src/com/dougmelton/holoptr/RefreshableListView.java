@@ -3,6 +3,7 @@ package com.dougmelton.holoptr;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -11,6 +12,7 @@ import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.Adapter;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.dougmelton.holoptr.HoloPullToRefreshLayout.GlowListener;
@@ -47,16 +49,18 @@ public class RefreshableListView extends ListView implements GlowListener, Refre
 	private void init(Context context) {
 		Resources res = getResources();
 
-		mGlowDrawable = res.getDrawable(R.drawable.overscroll_glow);
-		mEdgeDrawable = res.getDrawable(R.drawable.overscroll_edge);
-		mHeaderHeight = res.getDimensionPixelSize(R.dimen.header_height);
+		mGlowDrawable = res.getDrawable(R.drawable.hptr_overscroll_glow);
+		mEdgeDrawable = res.getDrawable(R.drawable.hptr_overscroll_edge);
+		mHeaderHeight = res.getDimensionPixelSize(R.dimen.hptr_header_height);
 
 		FrameLayout headerLayout = new FrameLayout(context);
 		mHeaderView = new View(context);
+		mHeaderView.setBackgroundResource(R.drawable.hptr_shadow_top);
 		headerLayout.addView(mHeaderView, FrameLayout.LayoutParams.MATCH_PARENT, mHeaderHeight);
 
 		FrameLayout footerLayout = new FrameLayout(context);
 		mFooterView = new View(context);
+		mFooterView.setBackgroundResource(R.drawable.hptr_shadow_bottom);
 		footerLayout.addView(mFooterView, FrameLayout.LayoutParams.MATCH_PARENT, mHeaderHeight);
 
 		addHeaderView(headerLayout, null, false);

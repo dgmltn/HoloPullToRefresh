@@ -18,7 +18,7 @@ import com.dougmelton.holoptr.AnimateRunnable.OnTickHandler;
 public class HoloPullToRefreshLayout extends FrameLayout {
 	private static final String TAG = HoloPullToRefreshLayout.class.getSimpleName();
 
-//	private static final float FRICTION = 2.5f;
+	//	private static final float FRICTION = 2.5f;
 
 	private static enum State {
 		REST,
@@ -41,7 +41,7 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 
 	private int mHeaderHeight;
 	private HoloPullToRefreshHeaderView mHeader;
-	private ImageView mShadow;
+	private View mShadow;
 
 	private View mRefreshableView;
 	private AnimatorProxy mAnimProxy;
@@ -59,7 +59,7 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 	}
 
 	private void init(Context context, AttributeSet attrs) {
-		mHeaderHeight = context.getResources().getDimensionPixelSize(R.dimen.header_height);
+		mHeaderHeight = context.getResources().getDimensionPixelSize(R.dimen.hptr_header_height);
 
 		mHeader = new HoloPullToRefreshHeaderView(context, attrs);
 		FrameLayout.LayoutParams lpHeader = generateDefaultLayoutParams();
@@ -67,12 +67,12 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 		mHeader.setLayoutParams(lpHeader);
 		addView(mHeader, 0);
 
-		mShadow = new ImageView(context, attrs);
+		mShadow = new View(context, attrs);
 		mShadow.setBackgroundColor(Color.TRANSPARENT);
 		FrameLayout.LayoutParams lpShadow = generateDefaultLayoutParams();
 		lpShadow.height = mHeaderHeight;
 		mShadow.setLayoutParams(lpShadow);
-		mShadow.setImageResource(R.drawable.shadow);
+		mShadow.setBackgroundResource(R.drawable.hptr_shadow_top);
 		addView(mShadow, 1);
 
 		ViewTreeObserver.OnGlobalLayoutListener listener = new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -146,10 +146,10 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 
 	// This calculates a springiness to the pull
 	private float augmentedPullDistance(float pixels) {
-//		float augmented1 = pixels / FRICTION;
-//		float augmented2 = (pixels * 650f) / (pixels + 1500f);
+		//		float augmented1 = pixels / FRICTION;
+		//		float augmented2 = (pixels * 650f) / (pixels + 1500f);
 		float augmented2 = (pixels * 400f) / (pixels + 1000f);
-//		Log.e(TAG, pixels + " => " + augmented1 + " vs " + augmented2);
+		//		Log.e(TAG, pixels + " => " + augmented1 + " vs " + augmented2);
 		return augmented2;
 	}
 
@@ -428,8 +428,9 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 
 			@Override
 			public void done() {
-				offset(0, 0, 0);
-				offsetShadow(mPullDistance, 0);
+				if (mRefreshableView instanceof Refreshable) {
+					offset(0, 0, 0);
+				}
 				setRefreshingTop(true);
 				dequeueState();
 			}
