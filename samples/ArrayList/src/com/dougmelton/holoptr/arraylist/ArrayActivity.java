@@ -10,6 +10,8 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.ArrayAdapter;
 
 import com.dougmelton.holoptr.HoloPullToRefreshLayout;
@@ -17,7 +19,7 @@ import com.dougmelton.holoptr.HoloPullToRefreshLayout.OnRefreshListener;
 import com.dougmelton.holoptr.R;
 import com.dougmelton.holoptr.RefreshableListView;
 
-public class ArrayActivity extends ListActivity {
+public class ArrayActivity extends ListActivity implements OnScrollListener {
 	private static final String TAG = ArrayActivity.class.getSimpleName();
 
 	private LinkedList<String> mListItems;
@@ -34,12 +36,13 @@ public class ArrayActivity extends ListActivity {
 		mPtrLayout.setOnRefreshListener(new OnRefreshListener() {
 			@Override
 			public void onRefresh(HoloPullToRefreshLayout refreshView) {
-				new PretendRefreshTask().execute();
+				new PretendPullToRefreshTask().execute();
 			}
 		});
 
 		RefreshableListView lv = (RefreshableListView) findViewById(android.R.id.list);
 		lv.setRefreshingBottom(true);
+		lv.setOnScrollListener(this);
 		spin();
 
 		mListItems = new LinkedList<String>();
@@ -93,9 +96,14 @@ public class ArrayActivity extends ListActivity {
 			"Whale"
 	};
 
-	private class PretendRefreshTask extends AsyncTask<Void, Void, Void> {
+	//////////////////////////////////////////////////////////////////////////
+	// Pull-to-refresh on top of list
 
-		protected PretendRefreshTask() {
+	private int mTopIndex = 0;
+	
+	private class PretendPullToRefreshTask extends AsyncTask<Void, Void, Void> {
+
+		protected PretendPullToRefreshTask() {
 		}
 
 		@Override
@@ -111,7 +119,55 @@ public class ArrayActivity extends ListActivity {
 
 		@Override
 		protected void onPostExecute(Void result) {
+			mTopIndex = (mTopIndex + mStrings.length - 1) % mStrings.length;
+			mAdapter.insert(mStrings[mTopIndex], 0);
 			mPtrLayout.onRefreshComplete(true);
+		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Slide-to-refresh on bottom of list
+	
+	private int mBotIndex = -1;
+	private boolean mIsBotRefreshing = false;
+
+	@Override
+	public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+		boolean loadMore = firstVisibleItem + visibleItemCount + 1 >= totalItemCount;
+		if (loadMore && !mIsBotRefreshing) {
+			new PretendSlideToRefreshTask().execute();
+		}
+	}
+
+	@Override
+	public void onScrollStateChanged(AbsListView view, int scrollState) {
+		// unused
+	}
+	
+	private class PretendSlideToRefreshTask extends AsyncTask<Void, Void, Void> {
+
+		protected PretendSlideToRefreshTask() {
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			try {
+				mIsBotRefreshing = true;
+				Thread.sleep(1000);
+			}
+			catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			mBotIndex = (mBotIndex + 1) % mStrings.length;
+			mAdapter.add(mStrings[mBotIndex]);
+			mBotIndex = (mBotIndex + 1) % mStrings.length;
+			mAdapter.add(mStrings[mBotIndex]);
+			mIsBotRefreshing = false;
 		}
 	}
 
