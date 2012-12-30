@@ -4,6 +4,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -11,7 +12,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 
 import com.dougmelton.holoptr.AnimateRunnable.OnTickHandler;
 
@@ -43,7 +43,6 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 	private HoloPullToRefreshHeaderView mHeader;
 	private View mShadow;
 
-	private View mRefreshableView;
 	private AnimatorProxy mAnimProxy;
 
 	private OnRefreshListener mOnRefreshListener;
@@ -60,6 +59,9 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 
 	private void init(Context context, AttributeSet attrs) {
 		mHeaderHeight = context.getResources().getDimensionPixelSize(R.dimen.hptr_header_height);
+
+		TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.HoloPullToRefresh);
+		mRefreshableViewResId = a.getResourceId(R.styleable.HoloPullToRefresh_refreshableView, View.NO_ID);
 
 		mHeader = new HoloPullToRefreshHeaderView(context, attrs);
 		FrameLayout.LayoutParams lpHeader = generateDefaultLayoutParams();
@@ -78,14 +80,37 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 		ViewTreeObserver.OnGlobalLayoutListener listener = new ViewTreeObserver.OnGlobalLayoutListener() {
 			public void onGlobalLayout() {
 				getViewTreeObserver().removeGlobalOnLayoutListener(this);
-				mRefreshableView = findViewById(android.R.id.list);
-				if (AnimatorProxy.NEEDS_PROXY) {
-					mAnimProxy = AnimatorProxy.wrap(mRefreshableView);
-				}
+				setRefreshableView(mRefreshableViewResId);
 				setState(State.REST, false);
 			}
 		};
 		getViewTreeObserver().addOnGlobalLayoutListener(listener);
+	}
+
+	/////////////////////////////////////////////////////////////////////////////
+	// Properties
+
+	private int mRefreshableViewResId;
+	private View mRefreshableView;
+
+	public void setRefreshableView(int resId) {
+		if (resId == View.NO_ID) {
+			setRefreshableView(getChildAt(getChildCount() - 1));
+		}
+		else {
+			setRefreshableView(findViewById(resId));
+		}
+	}
+
+	public void setRefreshableView(View refreshableView) {
+		mRefreshableView = refreshableView;
+		if (AnimatorProxy.NEEDS_PROXY) {
+			mAnimProxy = AnimatorProxy.wrap(mRefreshableView);
+		}
+	}
+
+	public View getRefreshableView() {
+		return mRefreshableView;
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
@@ -508,11 +533,14 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 	}
 
 	private boolean isReadyForPull() {
+		if (mRefreshableView == null) {
+			return false;
+		}
 		if (mRefreshableView instanceof Refreshable) {
 			return ((Refreshable) mRefreshableView).isReadyForPull();
 		}
 
-		return false;
+		return mRefreshableView.getScrollY() == 0;
 	}
 
 	private int getViewTopOffset() {
