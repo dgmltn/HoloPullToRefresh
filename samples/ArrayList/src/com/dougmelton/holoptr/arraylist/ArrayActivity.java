@@ -16,7 +16,6 @@ import android.widget.ArrayAdapter;
 
 import com.dougmelton.holoptr.HoloPullToRefreshLayout;
 import com.dougmelton.holoptr.HoloPullToRefreshLayout.OnRefreshListener;
-import com.dougmelton.holoptr.R;
 import com.dougmelton.holoptr.RefreshableListView;
 
 public class ArrayActivity extends ListActivity implements OnScrollListener {
@@ -100,7 +99,7 @@ public class ArrayActivity extends ListActivity implements OnScrollListener {
 	// Pull-to-refresh on top of list
 
 	private int mTopIndex = 0;
-	
+
 	private class PretendPullToRefreshTask extends AsyncTask<Void, Void, Void> {
 
 		protected PretendPullToRefreshTask() {
@@ -127,7 +126,7 @@ public class ArrayActivity extends ListActivity implements OnScrollListener {
 
 	//////////////////////////////////////////////////////////////////////////
 	// Slide-to-refresh on bottom of list
-	
+
 	private int mBotIndex = -1;
 	private boolean mIsBotRefreshing = false;
 
@@ -143,7 +142,7 @@ public class ArrayActivity extends ListActivity implements OnScrollListener {
 	public void onScrollStateChanged(AbsListView view, int scrollState) {
 		// unused
 	}
-	
+
 	private class PretendSlideToRefreshTask extends AsyncTask<Void, Void, Void> {
 
 		protected PretendSlideToRefreshTask() {

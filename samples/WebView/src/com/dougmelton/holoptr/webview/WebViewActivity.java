@@ -2,11 +2,11 @@ package com.dougmelton.holoptr.webview;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
 import com.dougmelton.holoptr.HoloPullToRefreshLayout;
 import com.dougmelton.holoptr.HoloPullToRefreshLayout.OnRefreshListener;
-import com.dougmelton.holoptr.R;
 
 public class WebViewActivity extends Activity implements OnRefreshListener {
 	private static final String TAG = WebViewActivity.class.getSimpleName();
@@ -24,6 +24,7 @@ public class WebViewActivity extends Activity implements OnRefreshListener {
 		mPtrLayout.setOnRefreshListener(this);
 
 		mBrowser = (WebView) findViewById(R.id.browser);
+		mBrowser.setWebChromeClient(mChrome);
 		mBrowser.loadUrl("http://www.google.com/finance?cid=694653");
 	}
 
@@ -32,4 +33,14 @@ public class WebViewActivity extends Activity implements OnRefreshListener {
 		mBrowser.reload();
 	}
 
+	private final WebChromeClient mChrome = new WebChromeClient() {
+
+		@Override
+		public void onProgressChanged(WebView view, int newProgress) {
+			if (newProgress == 100) {
+				mPtrLayout.onRefreshComplete(true);
+			}
+		}
+
+	};
 }
