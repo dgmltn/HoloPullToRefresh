@@ -1,5 +1,7 @@
 package com.dougmelton.holoptr;
 
+import java.util.ArrayList;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
@@ -12,7 +14,9 @@ import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.Adapter;
 import android.widget.FrameLayout;
+import android.widget.HeaderViewListAdapter;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import com.dougmelton.holoptr.HoloPullToRefreshLayout.GlowListener;
@@ -26,8 +30,11 @@ public class RefreshableListView extends ListView implements GlowListener, Refre
 	private Drawable mEdgeDrawable;
 	private int mHeaderHeight;
 
+	private FrameLayout mHeaderLayout;
+	private FrameLayout mFooterLayout;
 	private View mHeaderView;
 	private View mFooterView;
+	private HeaderViewListAdapter mWrapper;
 
 	private OnScrollListener mOnScrollListener;
 
@@ -53,18 +60,15 @@ public class RefreshableListView extends ListView implements GlowListener, Refre
 		mEdgeDrawable = res.getDrawable(R.drawable.hptr_overscroll_edge);
 		mHeaderHeight = res.getDimensionPixelSize(R.dimen.hptr_header_height);
 
-		FrameLayout headerLayout = new FrameLayout(context);
+		mHeaderLayout = new FrameLayout(context);
 		mHeaderView = new View(context);
 		mHeaderView.setBackgroundResource(R.drawable.hptr_shadow_top);
-		headerLayout.addView(mHeaderView, FrameLayout.LayoutParams.MATCH_PARENT, mHeaderHeight);
+		mHeaderLayout.addView(mHeaderView, FrameLayout.LayoutParams.MATCH_PARENT, mHeaderHeight);
 
-		FrameLayout footerLayout = new FrameLayout(context);
+		mFooterLayout = new FrameLayout(context);
 		mFooterView = new View(context);
 		mFooterView.setBackgroundResource(R.drawable.hptr_shadow_bottom);
-		footerLayout.addView(mFooterView, FrameLayout.LayoutParams.MATCH_PARENT, mHeaderHeight);
-
-		addHeaderView(headerLayout, null, false);
-		addFooterView(footerLayout, null, false);
+		mFooterLayout.addView(mFooterView, FrameLayout.LayoutParams.MATCH_PARENT, mHeaderHeight);
 
 		super.setOnScrollListener(this);
 
@@ -84,6 +88,33 @@ public class RefreshableListView extends ListView implements GlowListener, Refre
 			mEdgeDrawable.setAlpha(Math.min(mGlowAmount, 255));
 			mEdgeDrawable.draw(canvas);
 		}
+	}
+
+	@Override
+	public void setAdapter(ListAdapter adapter) {
+		ListView.FixedViewInfo headerInfo = this.new FixedViewInfo();
+		ListView.FixedViewInfo footerInfo = this.new FixedViewInfo();
+
+		headerInfo.view = mHeaderLayout;
+		headerInfo.isSelectable = false;
+
+		footerInfo.view = mFooterLayout;
+		footerInfo.isSelectable = false;
+
+		ArrayList<ListView.FixedViewInfo> headers = new ArrayList<ListView.FixedViewInfo>(1);
+		ArrayList<ListView.FixedViewInfo> footers = new ArrayList<ListView.FixedViewInfo>(1);
+
+		headers.add(headerInfo);
+		footers.add(footerInfo);
+
+		mWrapper = new HeaderViewListAdapter(headers, footers, adapter) {
+			@Override
+			public boolean areAllItemsEnabled() {
+				return true;
+			}
+		};
+
+		super.setAdapter(mWrapper);
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
