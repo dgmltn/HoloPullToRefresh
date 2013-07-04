@@ -409,7 +409,7 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 				public void done() {
 					mHeader.rest();
 					dequeueState();
-					hidePeekBackground();
+					showPeekBackground(false);
 				}
 			});
 		}
@@ -423,7 +423,7 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 		case PULL_TO_REFRESH:
 			return;
 		case REST:
-			showPeekBackground();
+			showPeekBackground(true);
 			mHeader.pullToRefresh(false);
 			break;
 		default:
@@ -484,15 +484,14 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 	/////////////////////////////////////////////////////////////////////////////
 	// Methods for the peekBackground
 
-	private void hidePeekBackground() {
+	public void showPeekBackground(boolean show) {
 		if (mPeekBackground != null) {
-			setBackgroundDrawable(null);
-		}
-	}
-
-	private void showPeekBackground() {
-		if (mPeekBackground != null) {
-			setBackgroundDrawable(mPeekBackground);
+			if (show) {
+				setBackgroundDrawable(mPeekBackground);
+			}
+			else {
+				setBackgroundDrawable(null);
+			}
 		}
 	}
 
