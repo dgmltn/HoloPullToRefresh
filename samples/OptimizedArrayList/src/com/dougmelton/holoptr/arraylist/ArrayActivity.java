@@ -147,6 +147,7 @@ public class ArrayActivity extends ListActivity implements OnScrollListener {
 	private class PretendSlideToRefreshTask extends AsyncTask<Void, Void, Void> {
 
 		protected PretendSlideToRefreshTask() {
+			mPtrLayout.showPeekBackground(true);
 		}
 
 		@Override
@@ -168,6 +169,8 @@ public class ArrayActivity extends ListActivity implements OnScrollListener {
 			mBotIndex = (mBotIndex + 1) % mStrings.length;
 			mAdapter.add(mStrings[mBotIndex]);
 			mIsBotRefreshing = false;
+
+			mPtrLayout.showPeekBackground(false);
 		}
 	}
 
