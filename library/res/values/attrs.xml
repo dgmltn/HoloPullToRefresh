@@ -2,5 +2,6 @@
 <resources>
     <declare-styleable name="HoloPullToRefresh">
         <attr name="refreshableView" format="reference"/>
+        <attr name="peekBackground" format="reference|color"/>
     </declare-styleable>
 </resources>

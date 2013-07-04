@@ -6,6 +6,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -62,6 +64,7 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 
 		TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.HoloPullToRefresh);
 		mRefreshableViewResId = a.getResourceId(R.styleable.HoloPullToRefresh_refreshableView, View.NO_ID);
+		mPeekBackground = a.getDrawable(R.styleable.HoloPullToRefresh_peekBackground);
 
 		mHeader = new HoloPullToRefreshHeaderView(context, attrs);
 		FrameLayout.LayoutParams lpHeader = generateDefaultLayoutParams();
@@ -92,6 +95,8 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 
 	private int mRefreshableViewResId;
 	private View mRefreshableView;
+
+	private Drawable mPeekBackground;
 
 	public void setRefreshableView(int resId) {
 		if (resId == View.NO_ID) {
@@ -404,6 +409,7 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 				public void done() {
 					mHeader.rest();
 					dequeueState();
+					hidePeekBackground();
 				}
 			});
 		}
@@ -417,6 +423,7 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 		case PULL_TO_REFRESH:
 			return;
 		case REST:
+			showPeekBackground();
 			mHeader.pullToRefresh(false);
 			break;
 		default:
@@ -472,6 +479,29 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 		else {
 			handler.done();
 		}
+	}
+
+	/////////////////////////////////////////////////////////////////////////////
+	// Methods for the peekBackground
+
+	private void hidePeekBackground() {
+		if (mPeekBackground != null) {
+			setBackgroundDrawable(null);
+		}
+	}
+
+	private void showPeekBackground() {
+		if (mPeekBackground != null) {
+			setBackgroundDrawable(mPeekBackground);
+		}
+	}
+
+	public void setPeekBackgroundColor(int color) {
+		mPeekBackground = new ColorDrawable(color);
+	}
+
+	public void setPeekBackgroundDrawable(Drawable drawable) {
+		mPeekBackground = drawable;
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
