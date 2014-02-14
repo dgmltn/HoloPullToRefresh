@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.widget.FrameLayout;
 
 import com.dougmelton.holoptr.AnimateRunnable.OnTickHandler;
@@ -531,8 +532,12 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 	 * Mark the current Refresh as complete. Will Reset the UI and hide the
 	 * Refreshing View
 	 */
-	public final void onRefreshComplete(boolean animated) {
-		setState(State.REST, animated);
+	public final void onRefreshComplete(final boolean animated) {
+		runOnNextPreDraw(new Runnable() {
+			public void run() {
+				setState(State.REST, animated);
+			}
+		});
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
@@ -578,5 +583,21 @@ public class HoloPullToRefreshLayout extends FrameLayout {
 		}
 
 		return mOffsetTop;
+	}
+
+	/**
+	 * Run code once, on the next PreDraw pass of the given View. This implements the
+	 * OnPreDrawListener without having to worry about too much boilerplate.
+	 * @param View
+	 * @param Runnable
+	 */
+	private void runOnNextPreDraw(final Runnable runnable) {
+		getViewTreeObserver().addOnPreDrawListener(new OnPreDrawListener() {
+			public boolean onPreDraw() {
+				getViewTreeObserver().removeOnPreDrawListener(this);
+				runnable.run();
+				return false;
+			}
+		});
 	}
 }
